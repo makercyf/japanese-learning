@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>かな Practice</title>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208;
+    --paper: #f5f0e8;
+    --aged: #e8dfc8;
+    --accent: #c0392b;
+    --accent2: #8b4513;
+    --light-ink: #6b5a3e;
+    --canvas-bg: #faf8f3;
+    --border: #c4b99a;
+    --shadow: rgba(100, 80, 40, 0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(180,160,120,0.12) 27px, rgba(180,160,120,0.12) 28px),
+      repeating-linear-gradient(90deg, transparent, transparent 27px, rgba(180,160,120,0.06) 27px, rgba(180,160,120,0.06) 28px);
+    min-height: 100vh;
+    font-family: 'DM Mono', monospace;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 40px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+    position: relative;
+  }
+
+  header h1 {
+    font-family: 'Shippori Mincho', serif;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    color: var(--ink);
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+  }
+
+  header h1 span {
+    display: block;
+    font-size: 0.45em;
+    color: var(--light-ink);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-top: 4px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 300;
+  }
+
+  .divider {
+    width: 100px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+    margin: 12px auto 0;
+  }
+
+  .type-selector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .type-btn {
+    padding: 7px 14px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--light-ink);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+  }
+
+  .type-btn:hover {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
+  .type-btn.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  .card {
+    background: var(--canvas-bg);
+    border: 1.5px solid var(--border);
+    box-shadow: 4px 4px 0 var(--shadow), 8px 8px 0 rgba(100,80,40,0.06);
+    border-radius: 3px;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  /* Question Box */
+  .question-card {
+    padding: 32px 28px 28px;
+    margin-bottom: 16px;
+    position: relative;
+    text-align: center;
+  }
+
+  .question-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--light-ink);
+    margin-bottom: 16px;
+    opacity: 0.7;
+  }
+
+  .question-char {
+    font-family: 'Shippori Mincho', serif;
+    font-size: clamp(5rem, 20vw, 8rem);
+    line-height: 1;
+    color: var(--ink);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .question-char.flash {
+    animation: charFlash 0.4s ease;
+  }
+
+  @keyframes charFlash {
+    0% { opacity: 0; transform: scale(0.85); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  .question-type-badge {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 2px 7px;
+    border-radius: 1px;
+    opacity: 0.75;
+  }
+
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 28px 20px;
+  }
+
+  .progress-bar-wrap {
+    flex: 1;
+    height: 3px;
+    background: var(--aged);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent2);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  .progress-count {
+    font-size: 0.65rem;
+    color: var(--light-ink);
+    opacity: 0.6;
+    white-space: nowrap;
+    min-width: 60px;
+    text-align: right;
+  }
+
+  /* Canvas / Answer Box */
+  .answer-card {
+    margin-bottom: 16px;
+    padding: 16px;
+    position: relative;
+  }
+
+  .answer-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--light-ink);
+    margin-bottom: 10px;
+    opacity: 0.7;
+    padding: 0 4px;
+  }
+
+  .canvas-wrap {
+    position: relative;
+    border: 1.5px solid var(--border);
+    border-radius: 2px;
+    background: #fff;
+    overflow: hidden;
+  }
+
+  #handwritingCanvas {
+    display: block;
+    width: 100%;
+    touch-action: none;
+    cursor: crosshair;
+  }
+
+  .canvas-corner {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-color: var(--accent2);
+    border-style: solid;
+    opacity: 0.4;
+  }
+  .canvas-corner.tl { top: 4px; left: 4px; border-width: 1.5px 0 0 1.5px; }
+  .canvas-corner.tr { top: 4px; right: 4px; border-width: 1.5px 1.5px 0 0; }
+  .canvas-corner.bl { bottom: 4px; left: 4px; border-width: 0 0 1.5px 1.5px; }
+  .canvas-corner.br { bottom: 4px; right: 4px; border-width: 0 1.5px 1.5px 0; }
+
+  .canvas-clear {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--light-ink);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    padding: 3px 8px;
+    cursor: pointer;
+    border-radius: 1px;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .canvas-clear:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* Answer reveal */
+  .answer-reveal {
+    margin-top: 12px;
+    padding: 14px 16px;
+    background: var(--aged);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    display: none;
+    animation: revealSlide 0.35s ease;
+  }
+
+  .answer-reveal.visible { display: block; }
+
+  @keyframes revealSlide {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .answer-reveal-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--light-ink);
+    opacity: 0.6;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .answer-reveal-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .answer-char {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 2.4rem;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .answer-alts {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .answer-alt-row {
+    font-size: 0.72rem;
+    color: var(--light-ink);
+  }
+
+  .answer-alt-row strong {
+    color: var(--ink);
+    font-weight: 500;
+    margin-right: 4px;
+  }
+
+  /* Buttons */
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    padding: 0 0 4px;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 14px 10px;
+    border: 1.5px solid var(--ink);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.18s ease;
+    text-transform: uppercase;
+  }
+
+  .btn-show {
+    background: transparent;
+    color: var(--ink);
+  }
+
+  .btn-show:hover {
+    background: var(--aged);
+  }
+
+  .btn-next {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  .btn-next:hover {
+    background: var(--accent2);
+    border-color: var(--accent2);
+  }
+
+  .btn:active { transform: translateY(1px); }
+
+  /* Range toggles */
+  .range-section {
+    width: 100%;
+    max-width: 520px;
+    margin-bottom: 20px;
+  }
+
+  .range-title {
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--light-ink);
+    opacity: 0.65;
+    margin-bottom: 10px;
+  }
+
+  .range-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .range-chip {
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--light-ink);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+
+  .range-chip.active {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    color: #fff;
+  }
+
+  .range-chip:hover:not(.active) {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
+  footer {
+    margin-top: 32px;
+    font-size: 0.58rem;
+    letter-spacing: 0.15em;
+    color: var(--light-ink);
+    opacity: 0.4;
+    text-align: center;
+  }
+
+  @media (max-width: 400px) {
+    .type-btn { font-size: 0.65rem; padding: 6px 10px; }
+    .btn { font-size: 0.7rem; padding: 12px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>かな練習<span>Kana Practice</span></h1>
+  <div class="divider"></div>
+</header>
+
+<!-- Question Type Selector -->
+<div class="type-selector">
+  <button class="type-btn active" data-type="0">Hiragana → ?</button>
+  <button class="type-btn" data-type="1">Katakana → ?</button>
+  <button class="type-btn" data-type="2">Romaji → ?</button>
+  <button class="type-btn" data-type="3">Random</button>
+</div>
+
+<!-- Range Selector -->
+<div class="range-section">
+  <div class="range-title">Character Sets</div>
+  <div class="range-grid" id="rangeGrid"></div>
+</div>
+
+<!-- Question Card -->
+<div class="card question-card" id="questionCard">
+  <div class="question-label">Write the answer below</div>
+  <div class="question-char" id="questionChar">あ</div>
+  <div class="question-type-badge" id="questionBadge">HIRAGANA</div>
+  <div class="progress-row">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+    </div>
+    <div class="progress-count" id="progressCount">0 / 0</div>
+  </div>
+</div>
+
+<!-- Answer / Canvas Card -->
+<div class="card answer-card" style="width:100%;max-width:520px;">
+  <div class="answer-label">Your Answer</div>
+  <div class="canvas-wrap">
+    <canvas id="handwritingCanvas"></canvas>
+    <div class="canvas-corner tl"></div>
+    <div class="canvas-corner tr"></div>
+    <div class="canvas-corner bl"></div>
+    <div class="canvas-corner br"></div>
+    <button class="canvas-clear" id="clearCanvas">Clear</button>
+  </div>
+  <div class="answer-reveal" id="answerReveal">
+    <div class="answer-reveal-label">Answer</div>
+    <div class="answer-reveal-content">
+      <div class="answer-char" id="revealChar">—</div>
+      <div class="answer-alts" id="revealAlts"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Buttons -->
+<div class="btn-row">
+  <button class="btn btn-show" id="showBtn">Show Answer</button>
+  <button class="btn btn-next" id="nextBtn">Next →</button>
+</div>
+
+<footer>かな練習 · Kana Practice Tool</footer>
+
+<script>
+// ===== DATA =====
+const kanaData = [
+  // Basic vowels
+  { romaji: 'a', hira: 'あ', kata: 'ア', group: 'Basic' },
+  { romaji: 'i', hira: 'い', kata: 'イ', group: 'Basic' },
+  { romaji: 'u', hira: 'う', kata: 'ウ', group: 'Basic' },
+  { romaji: 'e', hira: 'え', kata: 'エ', group: 'Basic' },
+  { romaji: 'o', hira: 'お', kata: 'オ', group: 'Basic' },
+  // K
+  { romaji: 'ka', hira: 'か', kata: 'カ', group: 'K' },
+  { romaji: 'ki', hira: 'き', kata: 'キ', group: 'K' },
+  { romaji: 'ku', hira: 'く', kata: 'ク', group: 'K' },
+  { romaji: 'ke', hira: 'け', kata: 'ケ', group: 'K' },
+  { romaji: 'ko', hira: 'こ', kata: 'コ', group: 'K' },
+  // S
+  { romaji: 'sa', hira: 'さ', kata: 'サ', group: 'S' },
+  { romaji: 'shi', hira: 'し', kata: 'シ', group: 'S' },
+  { romaji: 'su', hira: 'す', kata: 'ス', group: 'S' },
+  { romaji: 'se', hira: 'せ', kata: 'セ', group: 'S' },
+  { romaji: 'so', hira: 'そ', kata: 'ソ', group: 'S' },
+  // T
+  { romaji: 'ta', hira: 'た', kata: 'タ', group: 'T' },
+  { romaji: 'chi', hira: 'ち', kata: 'チ', group: 'T' },
+  { romaji: 'tsu', hira: 'つ', kata: 'ツ', group: 'T' },
+  { romaji: 'te', hira: 'て', kata: 'テ', group: 'T' },
+  { romaji: 'to', hira: 'と', kata: 'ト', group: 'T' },
+  // N
+  { romaji: 'na', hira: 'な', kata: 'ナ', group: 'N' },
+  { romaji: 'ni', hira: 'に', kata: 'ニ', group: 'N' },
+  { romaji: 'nu', hira: 'ぬ', kata: 'ヌ', group: 'N' },
+  { romaji: 'ne', hira: 'ね', kata: 'ネ', group: 'N' },
+  { romaji: 'no', hira: 'の', kata: 'ノ', group: 'N' },
+  // H
+  { romaji: 'ha', hira: 'は', kata: 'ハ', group: 'H' },
+  { romaji: 'hi', hira: 'ひ', kata: 'ヒ', group: 'H' },
+  { romaji: 'fu', hira: 'ふ', kata: 'フ', group: 'H' },
+  { romaji: 'he', hira: 'へ', kata: 'ヘ', group: 'H' },
+  { romaji: 'ho', hira: 'ほ', kata: 'ホ', group: 'H' },
+  // M
+  { romaji: 'ma', hira: 'ま', kata: 'マ', group: 'M' },
+  { romaji: 'mi', hira: 'み', kata: 'ミ', group: 'M' },
+  { romaji: 'mu', hira: 'む', kata: 'ム', group: 'M' },
+  { romaji: 'me', hira: 'め', kata: 'メ', group: 'M' },
+  { romaji: 'mo', hira: 'も', kata: 'モ', group: 'M' },
+  // Y
+  { romaji: 'ya', hira: 'や', kata: 'ヤ', group: 'Y' },
+  { romaji: 'yu', hira: 'ゆ', kata: 'ユ', group: 'Y' },
+  { romaji: 'yo', hira: 'よ', kata: 'ヨ', group: 'Y' },
+  // R
+  { romaji: 'ra', hira: 'ら', kata: 'ラ', group: 'R' },
+  { romaji: 'ri', hira: 'り', kata: 'リ', group: 'R' },
+  { romaji: 'ru', hira: 'る', kata: 'ル', group: 'R' },
+  { romaji: 're', hira: 'れ', kata: 'レ', group: 'R' },
+  { romaji: 'ro', hira: 'ろ', kata: 'ロ', group: 'R' },
+  // W
+  { romaji: 'wa', hira: 'わ', kata: 'ワ', group: 'W' },
+  { romaji: 'wo', hira: 'を', kata: 'ヲ', group: 'W' },
+  // N standalone
+  { romaji: 'n', hira: 'ん', kata: 'ン', group: 'W' },
+  // Dakuon 濁音
+  { romaji: 'ga', hira: 'が', kata: 'ガ', group: 'Dakuon' },
+  { romaji: 'gi', hira: 'ぎ', kata: 'ギ', group: 'Dakuon' },
+  { romaji: 'gu', hira: 'ぐ', kata: 'グ', group: 'Dakuon' },
+  { romaji: 'ge', hira: 'げ', kata: 'ゲ', group: 'Dakuon' },
+  { romaji: 'go', hira: 'ご', kata: 'ゴ', group: 'Dakuon' },
+  { romaji: 'za', hira: 'ざ', kata: 'ザ', group: 'Dakuon' },
+  { romaji: 'ji', hira: 'じ', kata: 'ジ', group: 'Dakuon' },
+  { romaji: 'zu', hira: 'ず', kata: 'ズ', group: 'Dakuon' },
+  { romaji: 'ze', hira: 'ぜ', kata: 'ゼ', group: 'Dakuon' },
+  { romaji: 'zo', hira: 'ぞ', kata: 'ゾ', group: 'Dakuon' },
+  { romaji: 'da', hira: 'だ', kata: 'ダ', group: 'Dakuon' },
+  { romaji: 'di', hira: 'ぢ', kata: 'ヂ', group: 'Dakuon' },
+  { romaji: 'du', hira: 'づ', kata: 'ヅ', group: 'Dakuon' },
+  { romaji: 'de', hira: 'で', kata: 'デ', group: 'Dakuon' },
+  { romaji: 'do', hira: 'ど', kata: 'ド', group: 'Dakuon' },
+  { romaji: 'ba', hira: 'ば', kata: 'バ', group: 'Dakuon' },
+  { romaji: 'bi', hira: 'び', kata: 'ビ', group: 'Dakuon' },
+  { romaji: 'bu', hira: 'ぶ', kata: 'ブ', group: 'Dakuon' },
+  { romaji: 'be', hira: 'べ', kata: 'ベ', group: 'Dakuon' },
+  { romaji: 'bo', hira: 'ぼ', kata: 'ボ', group: 'Dakuon' },
+  // Handakuon 半濁音
+  { romaji: 'pa', hira: 'ぱ', kata: 'パ', group: 'Handakuon' },
+  { romaji: 'pi', hira: 'ぴ', kata: 'ピ', group: 'Handakuon' },
+  { romaji: 'pu', hira: 'ぷ', kata: 'プ', group: 'Handakuon' },
+  { romaji: 'pe', hira: 'ぺ', kata: 'ペ', group: 'Handakuon' },
+  { romaji: 'po', hira: 'ぽ', kata: 'ポ', group: 'Handakuon' },
+];
+
+const groupDefs = [
+  { key: 'Basic', label: 'A·I·U·E·O' },
+  { key: 'K', label: 'K行' },
+  { key: 'S', label: 'S行' },
+  { key: 'T', label: 'T行' },
+  { key: 'N', label: 'N行' },
+  { key: 'H', label: 'H行' },
+  { key: 'M', label: 'M行' },
+  { key: 'Y', label: 'Y行' },
+  { key: 'R', label: 'R行' },
+  { key: 'W', label: 'W·ん' },
+  { key: 'Dakuon', label: '濁音' },
+  { key: 'Handakuon', label: '半濁音' },
+];
+
+// ===== STATE =====
+let activeGroups = new Set(['Basic', 'K', 'S', 'T', 'N', 'H', 'M', 'Y', 'R', 'W']);
+let questionType = 0; // 0=hira→?, 1=kata→?, 2=romaji→?
+let pool = [];
+let sessionIdx = 0;
+let currentItem = null;
+let answered = 0;
+let total = 0;
+
+// ===== CANVAS =====
+const canvas = document.getElementById('handwritingCanvas');
+const ctx = canvas.getContext('2d');
+let drawing = false;
+let lastX = 0, lastY = 0;
+
+function resizeCanvas() {
+  const wrap = canvas.parentElement;
+  const w = wrap.clientWidth;
+  const h = Math.round(Math.min(w * 0.55, 260));
+  canvas.width = w;
+  canvas.height = h;
+  canvas.style.height = h + 'px';
+  clearCanvas();
+}
+
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  if (e.touches) {
+    return [(e.touches[0].clientX - rect.left) * scaleX, (e.touches[0].clientY - rect.top) * scaleY];
+  }
+  return [(e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY];
+}
+
+function startDraw(e) {
+  e.preventDefault();
+  drawing = true;
+  [lastX, lastY] = getPos(e);
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, 1.2, 0, Math.PI * 2);
+  ctx.fillStyle = '#1a1208';
+  ctx.fill();
+}
+
+function draw(e) {
+  if (!drawing) return;
+  e.preventDefault();
+  const [x, y] = getPos(e);
+  ctx.beginPath();
+  ctx.moveTo(lastX, lastY);
+  ctx.lineTo(x, y);
+  ctx.strokeStyle = '#1a1208';
+  ctx.lineWidth = 2.2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+  [lastX, lastY] = [x, y];
+}
+
+function stopDraw(e) { drawing = false; }
+
+function clearCanvas() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Draw cross-hair guides
+  ctx.strokeStyle = 'rgba(196,185,154,0.25)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 6]);
+  ctx.beginPath();
+  ctx.moveTo(canvas.width / 2, 0);
+  ctx.lineTo(canvas.width / 2, canvas.height);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(0, canvas.height / 2);
+  ctx.lineTo(canvas.width, canvas.height / 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+canvas.addEventListener('mousedown', startDraw);
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('mouseup', stopDraw);
+canvas.addEventListener('mouseleave', stopDraw);
+canvas.addEventListener('touchstart', startDraw, { passive: false });
+canvas.addEventListener('touchmove', draw, { passive: false });
+canvas.addEventListener('touchend', stopDraw);
+document.getElementById('clearCanvas').addEventListener('click', clearCanvas);
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// ===== RANGE CHIPS =====
+const rangeGrid = document.getElementById('rangeGrid');
+groupDefs.forEach(g => {
+  const btn = document.createElement('button');
+  btn.className = 'range-chip' + (activeGroups.has(g.key) ? ' active' : '');
+  btn.textContent = g.label;
+  btn.dataset.key = g.key;
+  btn.addEventListener('click', () => {
+    if (activeGroups.has(g.key)) {
+      if (activeGroups.size > 1) {
+        activeGroups.delete(g.key);
+        btn.classList.remove('active');
+      }
+    } else {
+      activeGroups.add(g.key);
+      btn.classList.add('active');
+    }
+    buildPool();
+    nextQuestion();
+  });
+  rangeGrid.appendChild(btn);
+});
+
+// ===== TYPE BUTTONS =====
+document.querySelectorAll('.type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    questionType = parseInt(btn.dataset.type);
+    buildPool();
+    nextQuestion();
+  });
+});
+
+// ===== LOGIC =====
+function buildPool() {
+  pool = kanaData.filter(k => activeGroups.has(k.group));
+  shuffle(pool);
+  sessionIdx = 0;
+  total = pool.length;
+  answered = 0;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function getEffectiveType(item) {
+  if (questionType === 3) return Math.floor(Math.random() * 3);
+  return questionType;
+}
+
+function nextQuestion() {
+  if (sessionIdx >= pool.length) {
+    shuffle(pool);
+    sessionIdx = 0;
+    answered = 0;
+  }
+  currentItem = pool[sessionIdx];
+  sessionIdx++;
+
+  const type = getEffectiveType(currentItem);
+  currentItem._displayType = type;
+
+  const charEl = document.getElementById('questionChar');
+  const badge = document.getElementById('questionBadge');
+
+  let displayChar, badgeText;
+  if (type === 0) { displayChar = currentItem.hira; badgeText = 'HIRAGANA'; }
+  else if (type === 1) { displayChar = currentItem.kata; badgeText = 'KATAKANA'; }
+  else { displayChar = currentItem.romaji.toUpperCase(); badgeText = 'ROMAJI'; }
+
+  charEl.textContent = displayChar;
+  charEl.classList.remove('flash');
+  void charEl.offsetWidth;
+  charEl.classList.add('flash');
+  badge.textContent = badgeText;
+
+  // Hide answer
+  document.getElementById('answerReveal').classList.remove('visible');
+  clearCanvas();
+  updateProgress();
+}
+
+function showAnswer() {
+  const item = currentItem;
+  const type = item._displayType;
+  const revealChar = document.getElementById('revealChar');
+  const revealAlts = document.getElementById('revealAlts');
+
+  // Primary answer depends on question type
+  let primary, alts = [];
+  if (type === 0) {
+    primary = item.kata;
+    alts = [{ label: 'Romaji', val: item.romaji }, { label: 'Hiragana', val: item.hira }];
+  } else if (type === 1) {
+    primary = item.hira;
+    alts = [{ label: 'Romaji', val: item.romaji }, { label: 'Katakana', val: item.kata }];
+  } else {
+    primary = item.hira;
+    alts = [{ label: 'Katakana', val: item.kata }, { label: 'Romaji', val: item.romaji }];
+  }
+
+  revealChar.textContent = primary;
+  revealAlts.innerHTML = alts.map(a =>
+    `<div class="answer-alt-row"><strong>${a.label}:</strong>${a.val}</div>`
+  ).join('');
+
+  document.getElementById('answerReveal').classList.add('visible');
+  answered = Math.min(answered + 1, total);
+  updateProgress();
+}
+
+function updateProgress() {
+  const pct = total > 0 ? (sessionIdx / total) * 100 : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressCount').textContent = `${sessionIdx} / ${total}`;
+}
+
+document.getElementById('showBtn').addEventListener('click', showAnswer);
+document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+
+// Init
+buildPool();
+nextQuestion();
+</script>
+</body>
+</html>
